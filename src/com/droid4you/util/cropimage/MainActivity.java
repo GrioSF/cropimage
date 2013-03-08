@@ -2,7 +2,6 @@ package com.droid4you.util.cropimage;
 
 import java.io.File;
 
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -17,34 +16,34 @@ import android.widget.Button;
 public class MainActivity extends Activity {
 	private static final int PICK_FROM_CAMERA = 1;
 	private Uri mImageCaptureUri;
-
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		if (savedInstanceState != null) {
+			mImageCaptureUri = Uri.parse(savedInstanceState.getString("mImageCaptureUri"));
+		}
 		setContentView(R.layout.main);
-
-		Button b = (Button)findViewById(R.id.button);
+		
+		Button b = (Button) findViewById(R.id.button);
 		b.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				doTakePhotoAction();
-
 			}
 		});
 	}
-
-
+	
 	private void doTakePhotoAction() {
-
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
+		
 		mImageCaptureUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),
 				"tmp_contact_" + String.valueOf(System.currentTimeMillis()) + ".jpg"));
-
+		
 		intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, mImageCaptureUri);
-
+		
 		try {
 			intent.putExtra("return-data", false);
 			startActivityForResult(intent, PICK_FROM_CAMERA);
@@ -52,19 +51,27 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
-
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (mImageCaptureUri != null) {
+			outState.putString("mImageCaptureUri", mImageCaptureUri.toString());
+		}
+	}
+	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode != RESULT_OK) {
 			return;
 		}
-
+		
 		switch (requestCode) {
 		case PICK_FROM_CAMERA:
 			Intent intent = new Intent(this, CropImage.class);
 			intent.putExtra("image-path", mImageCaptureUri.getPath());
 			intent.putExtra("scale", true);
 			startActivity(intent);
-			break;
+		break;
 		}
 	}
 }
